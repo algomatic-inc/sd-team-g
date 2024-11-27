@@ -24,17 +24,39 @@ const map = new Map({
         attribution:
           '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
       },
-      noto_public: {
-        type: 'geojson',
-        data: "/data/noto-public.geojson",
-      },
       ishikawa_section: {
         type: 'geojson',
         data: "/data/ishikawa-section.geojson",
       },
+      shelter: {
+        type: 'geojson',
+        data: "/data/shelter.geojson",
+      },
       chubu_natural: {
         type: 'geojson',
         data: "/data/natural.geojson",
+      },
+      dosekiryu: {
+        type: 'raster',
+        tiles: [
+          'https://disaportaldata.gsi.go.jp/raster/05_dosekiryukeikaikuiki_data/17/{z}/{x}/{y}.png',
+        ],
+        minzoom: 2,
+        maxzoom: 12,
+        tileSize: 256,
+        attribution:
+          '<a href="https://disaportal.gsi.go.jp/hazardmap/copyright/opendata.html">ハザードマップポータルサイト</a>',
+      },
+      tsunami: {
+        type: 'raster',
+        tiles: [
+          'https://disaportaldata.gsi.go.jp/raster/04_tsunami_newlegend_data/{z}/{x}/{y}.png',
+        ],
+        minzoom: 2,
+        maxzoom: 17,
+        tileSize: 256,
+        attribution:
+          '<a href="https://disaportal.gsi.go.jp/hazardmap/copyright/opendata.html">ハザードマップポータルサイト</a>',
       },
       // sentinel_before: {
       //   type: 'image',
@@ -73,47 +95,74 @@ const map = new Map({
         type: 'raster',
         source: 'osm',
       },
-      {
-        id: 'sentinel_before',
-        type: 'raster',
-        source: 'sentinel_before',
-      },
-      {
-        id: 'sentinel_after',
-        type: 'raster',
-        source: 'sentinel_after',
-      },
-      {
-        id: 'ishikawa_section',
-        type: 'fill',
-        source: 'ishikawa_section',
-        paint: {
-          'fill-color': 'green',
-          'fill-opacity': 0.5,
-        },
-      },
-      {
-        id: 'noto_public',
-        type: 'fill',
-        source: 'noto_public',
-        paint: {
-          'fill-color': 'blue',
-          'fill-opacity': 0.8,
-        },
-      },
-      {
-        id: 'chubu_natural',
-        type: 'circle',
-        source: 'chubu_natural',
-        paint: {
-          'circle-radius': 3,
-          'circle-color': 'red',
-          'circle-opacity': 0.8,
-        },
-      },
     ],
   },
 });
+
+const layers: any = [
+  {
+    id: 'sentinel_before',
+    type: 'raster',
+    source: 'sentinel_before',
+  },
+  {
+    id: 'sentinel_after',
+    type: 'raster',
+    source: 'sentinel_after',
+  },
+  {
+    id: 'ishikawa_section_fill',
+    type: 'fill',
+    source: 'ishikawa_section',
+    paint: {
+      'fill-color': '#ffd700',
+      'fill-opacity': 0.3,
+    },
+  },
+  {
+    id: 'ishikawa_section_line',
+    type: 'line',
+    source: 'ishikawa_section',
+    paint: {
+      'line-color': '#ffffff',
+      'line-opacity': 0.8,
+      'line-width': 1,
+    },
+  },
+  {
+    id: 'shelter',
+    source: 'shelter',
+    type: 'circle',
+    paint: {
+      'circle-color': '#ff6347',
+      'circle-opacity': [
+        'interpolate',
+        ['linear'],
+        ['zoom'],
+        5,
+        0.05,
+        12,
+        0.8,
+      ],
+    },
+  },
+  {
+    id: 'dosekiryu',
+    type: 'raster',
+    source: 'dosekiryu',
+    paint: {
+      'raster-opacity': 1
+    },
+  },
+  {
+    id: 'tsunami',
+    type: 'raster',
+    source: 'tsunami',
+    paint: {
+      'raster-opacity': 1
+    },
+  },
+]
 
 const opacity = new OpacityControl({
   baseLayers: {
@@ -121,14 +170,20 @@ const opacity = new OpacityControl({
     'sentinel_after': '光学画像（災害後）',
   },
   overLayers: {
-    'ishikawa_section': '地域区画',
-    'noto_public': '公共施設',
-    'chubu_natural': '自然',
+    'ishikawa_section_fill': '地域区画 (polygon)',
+    'ishikawa_section_line': '地域区画 (line)',
+    'dosekiryu': '土石流警戒区域',
+    'tsunami': '津波警戒区域',
+    'shelter': '避難所',
   },
 });
 
 map.on('load', () => {
-  console.log('load')
+
+  for (const layer of layers) {
+    map.addLayer(layer);
+  }
+
   map.addControl(opacity, 'top-left');
 });
 
