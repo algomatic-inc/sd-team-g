@@ -1,0 +1,8 @@
+.idea
+.DS_Store
+gis/node_modules
+gis/dist
+gis/.env.local
+gis/.firebase
+
+*.tsbuildinfo

@@ -1,0 +1,15 @@
+services:
+  api:
+    build: 
+      context: ./backend
+      target: local
+    volumes:
+      - ./backend:/app
+      - ~/.config/gcloud:/root/.config/gcloud
+    ports:
+      - "8000:8000"
+    environment:
+      - GOOGLE_CLOUD_PROJECT=xxxx
+      - BUCKET_NAME=yyyy
+      - GEMINI_MODEL=gemini-1.5-flash-002
+    command: ["pipenv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
