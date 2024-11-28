@@ -3,6 +3,7 @@
 gis/node_modules
 gis/dist
 gis/.env.local
+gis/.env
 gis/.firebase
 
 *.tsbuildinfo

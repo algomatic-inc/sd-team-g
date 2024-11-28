@@ -1,8 +1,11 @@
 import { Map } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import { createRoot } from 'react-dom/client';
 
 import OpacityControl from 'maplibre-gl-opacity';
 import 'maplibre-gl-opacity/dist/maplibre-gl-opacity.css';
+
+import { GeoJSONGenerator } from './GeoJSONGenerator.tsx';
 
 const tileUrl = `${location.origin}/data/sentinel/before/{z}/{x}/{y}.png`;
 console.log(tileUrl)
@@ -53,7 +56,7 @@ const map = new Map({
           'https://disaportaldata.gsi.go.jp/raster/04_tsunami_newlegend_data/{z}/{x}/{y}.png',
         ],
         minzoom: 2,
-        maxzoom: 17,
+        maxzoom: 12,
         tileSize: 256,
         attribution:
           '<a href="https://disaportal.gsi.go.jp/hazardmap/copyright/opendata.html">ハザードマップポータルサイト</a>',
@@ -135,12 +138,21 @@ const layers: any = [
     type: 'circle',
     paint: {
       'circle-color': '#ff6347',
+      'circle-radius': [
+        'interpolate',
+        ['linear'],
+        ['zoom'],
+        5,
+        1,
+        12,
+        8,
+      ],
       'circle-opacity': [
         'interpolate',
         ['linear'],
         ['zoom'],
         5,
-        0.05,
+        0.2,
         12,
         0.8,
       ],
@@ -170,8 +182,8 @@ const opacity = new OpacityControl({
     'sentinel_after': '光学画像（災害後）',
   },
   overLayers: {
-    'ishikawa_section_fill': '地域区画 (polygon)',
     'ishikawa_section_line': '地域区画 (line)',
+    'ishikawa_section_fill': '地域区画 (polygon)',
     'dosekiryu': '土石流警戒区域',
     'tsunami': '津波警戒区域',
     'shelter': '避難所',
@@ -185,6 +197,11 @@ map.on('load', () => {
   }
 
   map.addControl(opacity, 'top-left');
+
+  const container = document.createElement('div');
+  document.body.appendChild(container);
+  const root = createRoot(container);
+  root.render(<GeoJSONGenerator map={map} />);
 });
 
 map.on('error', (e) => {
